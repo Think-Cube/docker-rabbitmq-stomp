@@ -15,19 +15,19 @@ docker run -d --name "$name" \
   -p 127.0.0.1::15672 -p 127.0.0.1::15674 -p 127.0.0.1::61613 "$image" > /dev/null
 
 for _ in $(seq 1 90); do
-  docker exec "$name" rabbitmq-diagnostics -q check_running > /dev/null 2>&1 && break
+  docker exec -u rabbitmq "$name" rabbitmq-diagnostics -q check_running > /dev/null 2>&1 && break
   sleep 2
 done
-if ! docker exec "$name" rabbitmq-diagnostics -q check_running; then
+if ! docker exec -u rabbitmq "$name" rabbitmq-diagnostics -q check_running; then
   docker logs "$name"
   exit 1
 fi
-docker exec "$name" rabbitmq-diagnostics -q server_version
+docker exec -u rabbitmq "$name" rabbitmq-diagnostics -q server_version
 
 # The broker runs as rabbitmq, not root.
-docker exec "$name" ps -o user,comm | grep beam | grep -q '^rabbitmq'
+docker exec -u rabbitmq "$name" ps -o user,comm | grep beam | grep -q '^rabbitmq'
 
-plugins=$(docker exec "$name" rabbitmq-plugins list -e -m)
+plugins=$(docker exec -u rabbitmq "$name" rabbitmq-plugins list -e -m)
 for plugin in rabbitmq_management rabbitmq_stomp rabbitmq_web_stomp; do
   grep -qx "$plugin" <<< "$plugins"
 done
@@ -45,9 +45,9 @@ for _ in $(seq 1 30); do
 done
 test "$code" = "401"
 
-docker exec "$name" rabbitmqctl -q add_user "$user" "$pass" > /dev/null
-docker exec "$name" rabbitmqctl -q set_user_tags "$user" administrator > /dev/null
-docker exec "$name" rabbitmqctl -q set_permissions -p / "$user" '.*' '.*' '.*' > /dev/null
+docker exec -u rabbitmq "$name" rabbitmqctl -q add_user "$user" "$pass" > /dev/null
+docker exec -u rabbitmq "$name" rabbitmqctl -q set_user_tags "$user" administrator > /dev/null
+docker exec -u rabbitmq "$name" rabbitmqctl -q set_permissions -p / "$user" '.*' '.*' '.*' > /dev/null
 
 # Management HTTP API.
 curl -fsS -u "$user:$pass" "$api" | grep -q '"rabbitmq_version"'

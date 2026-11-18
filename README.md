@@ -42,12 +42,14 @@ Always set `RABBITMQ_DEFAULT_USER` and `RABBITMQ_DEFAULT_PASS`. The built-in `gu
 
 To change other settings, mount additional files into `/etc/rabbitmq/conf.d/`. They are loaded in alphabetical order.
 
+Run CLI tools as the `rabbitmq` user, for example `docker exec -u rabbitmq rabbitmq rabbitmqctl status`. Running them as root before the broker has finished starting creates an Erlang cookie the broker cannot read, and it fails to boot.
+
 ## Upgrading
 
 Image 2.x contains RabbitMQ 4.4. Earlier releases of this image contained RabbitMQ 4.1, and RabbitMQ does not support upgrading a node with existing data from 4.1 directly to 4.4. If you keep data in a volume:
 
 1. Run the official `rabbitmq:4.2-alpine` image on the same volume until it has started.
-2. Enable all feature flags: `docker exec rabbitmq rabbitmqctl enable_feature_flag all`.
+2. Enable all feature flags: `docker exec -u rabbitmq rabbitmq rabbitmqctl enable_feature_flag all`.
 3. Stop it and start this image's 2.x release on the same volume.
 
 Without persistent data, or when migrating to a fresh cluster (blue-green), you can switch directly. See the [RabbitMQ upgrade guide](https://www.rabbitmq.com/docs/upgrade).
