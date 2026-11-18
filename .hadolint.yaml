@@ -1,0 +1,3 @@
+ignored:
+  # apk upgrade is deliberate: the base is pinned by digest and the weekly rebuild picks up OS patches.
+  - DL3017
