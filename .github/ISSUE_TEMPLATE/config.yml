@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Discussion
-    url: https://github.com/Think-Cube/docker-rabbitmq-stomp/discussions
-    about: General questions, ideas, and feedback
+  - name: Helm chart
+    url: https://github.com/Think-Cube/rabbitmq-stomp-chart/issues
+    about: Problems with deploying this image on Kubernetes
+  - name: RabbitMQ discussions
+    url: https://github.com/rabbitmq/rabbitmq-server/discussions
+    about: Questions about RabbitMQ itself
