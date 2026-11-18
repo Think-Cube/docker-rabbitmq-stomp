@@ -7,11 +7,10 @@ LABEL org.opencontainers.image.title="rabbitmq-stomp" \
       org.opencontainers.image.licenses="MIT"
 
 # The upgrade is what lets the weekly rebuild pick up security patches
-# while the base image stays pinned by digest.
-RUN apk upgrade --no-cache
-
-# Enable plugins as the rabbitmq user, the way the official image does, so the file stays writable at runtime.
-RUN su-exec rabbitmq rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_stomp rabbitmq_web_stomp
+# while the base image stays pinned by digest. Plugins are enabled as the
+# rabbitmq user, the way the official image does, so the file stays writable at runtime.
+RUN apk upgrade --no-cache && \
+    su-exec rabbitmq rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_stomp rabbitmq_web_stomp
 
 # Loaded after the official 10-defaults.conf, which opens the guest account to the network.
 COPY --chown=rabbitmq:rabbitmq conf.d/30-guest-loopback.conf /etc/rabbitmq/conf.d/
