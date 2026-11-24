@@ -24,8 +24,10 @@ if ! docker exec -u rabbitmq "$name" rabbitmq-diagnostics -q check_running; then
 fi
 docker exec -u rabbitmq "$name" rabbitmq-diagnostics -q server_version
 
-# The broker runs as rabbitmq, not root.
-docker exec -u rabbitmq "$name" ps -o user,comm | grep beam | grep -q '^rabbitmq'
+# The broker runs as rabbitmq, not root. Output is captured before matching: piping
+# into grep -q can end the writer with SIGPIPE, which pipefail reports as a failure.
+processes=$(docker exec -u rabbitmq "$name" ps -o user,comm)
+awk '$2 ~ /beam/ && $1 == "rabbitmq" { found = 1 } END { exit !found }' <<< "$processes"
 
 plugins=$(docker exec -u rabbitmq "$name" rabbitmq-plugins list -e -m)
 for plugin in rabbitmq_management rabbitmq_stomp rabbitmq_web_stomp; do
@@ -50,7 +52,8 @@ docker exec -u rabbitmq "$name" rabbitmqctl -q set_user_tags "$user" administrat
 docker exec -u rabbitmq "$name" rabbitmqctl -q set_permissions -p / "$user" '.*' '.*' '.*' > /dev/null
 
 # Management HTTP API.
-curl -fsS -u "$user:$pass" "$api" | grep -q '"rabbitmq_version"'
+overview=$(curl -fsS -u "$user:$pass" "$api")
+grep -q '"rabbitmq_version"' <<< "$overview"
 
 # STOMP: a CONNECT frame must be answered with CONNECTED.
 python3 - "$(port 61613)" "$user" "$pass" << 'PY'
