@@ -1,0 +1,9 @@
+# Versions Dependabot does not track; checked weekly by .github/workflows/version-check.yml.
+checks:
+  - name: RabbitMQ minor release
+    file: Dockerfile
+    pattern: 'FROM rabbitmq:(\d+\.\d+)\.\d+-alpine'
+    source: docker-hub
+    repository: library/rabbitmq
+    tag-pattern: '(\d+\.\d+)\.\d+-alpine'
+    note: Dependabot only takes patch releases. Check the RabbitMQ upgrade guide first, since a new minor can need a staged upgrade of existing data, and release a new major version of the image if it does.
